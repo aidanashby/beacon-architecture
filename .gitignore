@@ -1,0 +1,17 @@
+.env
+.env.local
+*.key
+
+# Everything specific to one organisation: credentials, raw schema, branding,
+# taxonomy and semantics content, logos, and every generated output (schema
+# exports, usage reports, the HTML report — all nested under orgs/<slug>/).
+# Nothing here is public-repo material — this tool is meant to be generic
+# across any Beacon account.
+orgs/*
+!orgs/README.md
+
+# Local working copy of raw API responses.
+raw/
+tmp.*/
+
+__pycache__/

@@ -1,0 +1,185 @@
+<title>Beacon Export Process</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --panel:#fff; --ink:#1c1b19; --muted:#5f5b54; --line:#ddd8d0;
+    --accent:#7a4b8c; --accent-soft:#f0e7f4; --warn:#8c4b2f; --warn-soft:#f7ebe4;
+    --ok:#2f6b4f; --ok-soft:#e6f0ea;
+  }
+  :root:not([data-theme="light"]){}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17161a; --panel:#201f24; --ink:#eceaf0; --muted:#a9a4b0; --line:#37343d;
+      --accent:#c39ad4; --accent-soft:#2c2333; --warn:#e0a184; --warn-soft:#33251d;
+      --ok:#7fc9a3; --ok-soft:#1d2a24;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17161a; --panel:#201f24; --ink:#eceaf0; --muted:#a9a4b0; --line:#37343d;
+    --accent:#c39ad4; --accent-soft:#2c2333; --warn:#e0a184; --warn-soft:#33251d;
+    --ok:#7fc9a3; --ok-soft:#1d2a24;
+  }
+  body{
+    background:var(--bg); color:var(--ink); margin:0; padding:2.5rem 1.25rem 4rem;
+    font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  main{max-width:940px; margin:0 auto;}
+  h1{font-size:1.9rem; margin:0 0 .3rem; letter-spacing:-.02em;}
+  .sub{color:var(--muted); margin:0 0 2.5rem; font-size:1.05rem;}
+  h2{font-size:1.15rem; margin:2.75rem 0 1rem; letter-spacing:-.01em;}
+  .rule{height:1px; background:var(--line); border:0; margin:0;}
+
+  .goal{
+    background:var(--accent-soft); border-left:3px solid var(--accent);
+    padding:1.1rem 1.25rem; border-radius:0 8px 8px 0; margin-bottom:.5rem;
+  }
+  .goal p{margin:0;}
+  .goal p + p{margin-top:.6rem;}
+
+  .step{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:1.1rem 1.25rem; margin-bottom:.55rem; position:relative;
+  }
+  .step-head{display:flex; align-items:baseline; gap:.7rem; flex-wrap:wrap;}
+  .num{
+    flex:none; width:1.7rem; height:1.7rem; border-radius:50%;
+    background:var(--accent); color:#fff; font-size:.85rem; font-weight:600;
+    display:grid; place-items:center; align-self:center;
+  }
+  :root:not([data-theme="light"]) .num{color:#17161a;}
+  @media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .num{color:#fff;}}
+  .step h3{margin:0; font-size:1.02rem;}
+  .tag{
+    font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--muted); border:1px solid var(--line); padding:.1rem .45rem; border-radius:4px;
+  }
+  .step p{margin:.6rem 0 0; color:var(--muted); font-size:.95rem;}
+  .io{margin:.75rem 0 0; padding:0; list-style:none; font-size:.9rem;}
+  .io li{padding:.15rem 0 .15rem 1.4rem; position:relative;}
+  .io li::before{position:absolute; left:0; color:var(--muted);}
+  .io .in::before{content:"in";  font-size:.7rem; top:.45rem; letter-spacing:.05em;}
+  .io .out::before{content:"out"; font-size:.7rem; top:.45rem; letter-spacing:.05em; color:var(--ok);}
+  code{
+    font-family:ui-monospace,"Cascadia Code",Consolas,monospace; font-size:.86em;
+    background:var(--accent-soft); padding:.08em .35em; border-radius:4px;
+  }
+  .arrow{text-align:center; color:var(--line); font-size:1.3rem; line-height:1; margin:.1rem 0 .55rem;}
+
+  .gate{
+    background:var(--warn-soft); border:1px solid var(--warn); border-radius:10px;
+    padding:1rem 1.25rem; margin-bottom:.55rem;
+  }
+  .gate h3{margin:0 0 .5rem; font-size:1rem; color:var(--warn);}
+  .gate ul{margin:0; padding-left:1.2rem; font-size:.93rem;}
+
+  .wrap{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  table{border-collapse:collapse; width:100%; font-size:.92rem; min-width:520px;}
+  th,td{text-align:left; padding:.55rem .7rem; border-bottom:1px solid var(--line); vertical-align:top;}
+  th{font-size:.75rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:600;}
+  td:first-child{white-space:nowrap;}
+  .yes{color:var(--ok); font-weight:600;}
+  .no{color:var(--warn); font-weight:600;}
+
+  .open{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:1rem 1.25rem;}
+  .open ol{margin:0; padding-left:1.3rem;}
+  .open li{margin:.35rem 0;}
+  footer{margin-top:3rem; color:var(--muted); font-size:.85rem;}
+</style>
+
+<main>
+  <h1>Beacon CRM → AI-readable architecture</h1>
+  <p class="sub">What we're building, and the sequence to get there. Works against any Beacon account.</p>
+
+  <div class="goal">
+    <p><strong>The goal is to describe the shape of the CRM, not its contents.</strong> An AI agent should be able to answer "what can a Grant record hold, what does it link to, what values may that field take, can files attach to it" without ever having seen a real person, organisation, grant or case note.</p>
+    <p><strong>No records ship.</strong> <code>orgs/&lt;org&gt;/out/</code> contains entity types, fields, field types, select vocabularies, the reference graph, smart-field formulas, rollup configs and which types accept attachments. No record values, no counts, nothing that goes stale as records are added.</p>
+    <p><strong>Analytics live separately.</strong> Record counts and option usage are a snapshot, not architecture, so they go to <code>orgs/&lt;org&gt;/reports/</code> — regenerated on demand, gitignored, never mixed into the export.</p>
+  </div>
+
+  <h2>Pipeline</h2>
+
+  <div class="step">
+    <div class="step-head"><span class="num">1</span><h3>Fetch the schema</h3><span class="tag">read-only</span></div>
+    <p>One authenticated <code>GET /entity_types</code>. This is configuration, not personal data, so it is taken whole and kept.</p>
+    <ul class="io">
+      <li class="in"><code>BEACON_API_KEY</code> from <code>orgs/&lt;org&gt;/.env.local</code> (gitignored)</li>
+      <li class="out"><code>orgs/&lt;org&gt;/beacon-schema-raw.json</code> — no personal data, kept as the source of truth (gitignored along with the rest of orgs/&lt;org&gt;/)</li>
+    </ul>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="step">
+    <div class="step-head"><span class="num">2</span><h3>Build the schema documents</h3><span class="tag">no network</span></div>
+    <p>Pure transformation of step 1. Every reference field names its target entity type IDs, which resolve inside the same response, so the relationship graph falls out of the schema with no extra calls.</p>
+    <ul class="io">
+      <li class="in"><code>orgs/&lt;org&gt;/beacon-schema-raw.json</code></li>
+      <li class="out"><code>orgs/&lt;org&gt;/out/schema.json</code> — every entity type and field, full metadata</li>
+      <li class="out"><code>orgs/&lt;org&gt;/out/relationships.json</code> — reference graph with resolved names and cardinality</li>
+      <li class="out"><code>orgs/&lt;org&gt;/out/attachments.json</code> — which entity types have file fields, and which</li>
+    </ul>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="step">
+    <div class="step-head"><span class="num">3</span><h3>Usage report (optional, on demand)</h3><span class="tag">optional · separate output</span></div>
+    <p>Streams <code>GET /entities/{key}</code> and counts. Answers the practical question: for each select field, how many records hold each option, and which options are used by nobody. That surfaces both data-collection gaps and options worth trimming. Values are counted and discarded; nothing is written to <code>orgs/&lt;org&gt;/out/</code>.</p>
+    <ul class="io">
+      <li class="in">live API, ~60 paged GETs, well inside the 300/min limit</li>
+      <li class="out"><code>orgs/&lt;org&gt;/reports/usage.json</code> — per field: fill rate, and per select option, the record count</li>
+      <li class="out"><code>orgs/&lt;org&gt;/reports/usage-summary.md</code> — the digest: unused options, and fields no record has ever filled</li>
+    </ul>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="gate">
+    <h3>Gate — verify_out.py, fails closed</h3>
+    <ul>
+      <li>Special-category fields (ethnicity, religion, sexual orientation, disability, health, allergies, DOB, gender, right to reside, marital status, net worth) contribute <strong>counts only</strong> — never observed values, even where the schema keeps the option list.</li>
+      <li>Free-text fields (casework notes, case notes, safeguarding, comments, beneficiary and volunteer notes) contribute <strong>fill rate only</strong> — never a distinct-value sample.</li>
+      <li>File fields contribute <strong>the fact that files may attach</strong> — never a filename, never a count of real attachments.</li>
+      <li>No output file may contain an email, phone number, postcode or prose-length string, and no field may go missing. Non-zero exit blocks the commit.</li>
+    </ul>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="step">
+    <div class="step-head"><span class="num">4</span><h3>Publish</h3></div>
+    <p><code>verify_out.py</code> is the gate and it fails closed: it scans for emails, phone numbers, postcodes and prose, rejects any JSON key that would indicate record data, and asserts every field survived the transform. <code>orgs/&lt;org&gt;/out/</code> stays gitignored regardless — this gate matters if you ever choose to publish one org's export separately from this repo.</p>
+    <ul class="io">
+      <li class="in"><code>orgs/&lt;org&gt;/out/</code></li>
+      <li class="out">the AI-ready dataset for that organisation</li>
+    </ul>
+  </div>
+
+  <h2>What ships, and what doesn't</h2>
+  <div class="wrap">
+    <table>
+      <thead><tr><th>Thing</th><th>In the export?</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Entity types, fields, labels, keys</td><td class="yes">Yes, whole</td><td>Configuration. Not personal data. The core of what the AI needs.</td></tr>
+        <tr><td>Field types and settings</td><td class="yes">Yes, whole</td><td>Decimal places, allow-multiple, read-only, required — all architecture.</td></tr>
+        <tr><td>Select options</td><td class="yes">Yes, whole</td><td>The vocabulary is design, not data. Kept even for special-category fields.</td></tr>
+        <tr><td>Reference graph</td><td class="yes">Yes, whole</td><td>How the model hangs together. Derived from the schema alone.</td></tr>
+        <tr><td>Smart-field formulas, rollup configs</td><td class="yes">Yes, whole</td><td>Business logic. Formula shipped, computed value never.</td></tr>
+        <tr><td>Layouts and list columns</td><td class="yes">Yes</td><td>Shows what staff actually see and prioritise.</td></tr>
+        <tr><td>Record counts per type</td><td class="no">Not in <code>orgs/&lt;org&gt;/out/</code></td><td>Analytics, not architecture. Goes stale. Lives in <code>orgs/&lt;org&gt;/reports/</code>.</td></tr>
+        <tr><td>Field fill rates, option usage</td><td class="no">Not in <code>orgs/&lt;org&gt;/out/</code></td><td>The point of the separate report: shows unused options worth trimming.</td></tr>
+        <tr><td>Which types accept attachments</td><td class="yes">Yes</td><td>Structural fact about the model.</td></tr>
+        <tr><td>Any record values</td><td class="no">No</td><td>Not needed for architecture. Excluded wholesale rather than sanitised.</td></tr>
+        <tr><td>Filenames of attachments</td><td class="no">No</td><td>Filenames leak names and case detail. Only the capability matters.</td></tr>
+        <tr><td>Free-text note bodies</td><td class="no">No</td><td>Redacted as policy, regardless of whether current content is dummy data.</td></tr>
+        <tr><td>Users, by name</td><td class="no">No</td><td>Count and role distribution only.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Status and open points</h2>
+  <div class="open">
+    <ol>
+      <li><strong>Read-only, absolutely.</strong> <code>beacon.py</code> hardcodes <code>method="GET"</code> and its self-check fails if the strings POST, PATCH, PUT or DELETE ever appear in the client. There is no write path in this project.</li>
+      <li><strong>Unused select options</strong> turn up in most accounts — <code>orgs/&lt;org&gt;/reports/usage-summary.md</code> lists them by entity type. Worth a pass to decide which are gaps in data collection and which are options to retire.</li>
+      <li><strong><code>orgs/&lt;org&gt;/</code> stays entirely gitignored, inputs and generated output alike.</strong> This repo carries no organisation's credentials, branding, schema or record counts — only the generic tooling.</li>
+    </ol>
+  </div>
+
+  <footer>Built and run 2026-08-27: <code>beacon.py</code>, <code>build_schema.py</code>, <code>usage_report.py</code>, <code>verify_out.py</code>. See <code>docs/ARCHITECTURE.md</code> for the API findings this rests on, and <code>docs/HANDOFF.md</code> for cold-start context.</footer>
+</main>
