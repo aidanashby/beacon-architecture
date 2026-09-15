@@ -1,17 +1,10 @@
 # orgs/
 
-Everything specific to one Beacon account lives in its own `orgs/<slug>/`
-folder. Nothing under `orgs/` (other than this file) is tracked in git —
-see `.gitignore` — because none of it is generic: it's one charity's
-credentials, colours, logo and editorial knowledge of its own CRM.
+Everything specific to one Beacon account lives in its own `orgs/<slug>/` folder. Nothing under `orgs/` (other than this file) is tracked in git — see `.gitignore` — because none of it is generic: it's one charity's credentials, colours, logo and editorial knowledge of its own CRM.
 
-**Run `python run.py` from the repo root to create or pick up an
-organisation — it's a wizard and writes everything below for you.** This
-file documents what it creates, for when you want to understand or
-hand-edit the result.
+**Run `python run.py` from the repo root to create or pick up an organisation — it's a wizard and writes everything below for you.** This file documents what it creates, for when you want to understand or hand-edit the result.
 
-Everything for one org — inputs and generated output alike — lives under
-its `orgs/<slug>/` folder, so a single gitignore rule covers all of it:
+Everything for one org — inputs and generated output alike — lives under its `orgs/<slug>/` folder, so a single gitignore rule covers all of it:
 
 ```
 orgs/<slug>/
@@ -78,7 +71,4 @@ orgs/<slug>/
 ## Getting a new org running
 
 Run `python run.py`, pick "set up a new organisation", answer the prompts.
-It creates the folder above, tells you where to put the real API key, and
-stops there. Run it again once the key's in — it fetches the schema and
-offers to build the export and report. Rerun any time after that to rebuild
-either one.
+It creates the folder above, tells you where to put the real API key, and stops there. Run it again once the key's in — it fetches the schema and offers to build the export and report. Rerun any time after that to rebuild either one.
