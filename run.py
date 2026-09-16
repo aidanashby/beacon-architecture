@@ -107,6 +107,14 @@ def ask(prompt, default=""):
     return val or default
 
 
+def sanitize_hex(colour):
+    """Add a leading # if missing so the value works as a CSS colour."""
+    colour = colour.strip()
+    if colour and not colour.startswith("#") and re.fullmatch(r"[0-9a-fA-F]{3}|[0-9a-fA-F]{6}", colour):
+        colour = "#" + colour
+    return colour
+
+
 def has_real_credentials(org):
     path = org_context.org_paths(org)["env_file"]
     if not path.exists():
@@ -165,8 +173,8 @@ def setup_org(slug, is_new):
     if not paths["branding_file"].exists():
         print(f"\nBranding for {name} — press Enter to skip any and use a neutral default:")
         branding = {"name": name}
-        primary = ask("  Primary colour (hex)")
-        secondary = ask("  Secondary/accent colour (hex)")
+        primary = sanitize_hex(ask("  Primary colour (hex)"))
+        secondary = sanitize_hex(ask("  Secondary/accent colour (hex)"))
         logo_white = ask("  Logo URL for dark backgrounds (blank if none)")
         logo_purple = ask("  Logo URL for print/light backgrounds (blank if none)")
         if primary:
