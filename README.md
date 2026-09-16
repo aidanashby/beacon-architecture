@@ -36,6 +36,7 @@ types, fields, select vocabularies, the reference graph, smart-field
 formulas, rollup configs, and which types accept file attachments. No record
 values, ever.
 
+- [`CHANGELOG.md`](CHANGELOG.md) — notable changes to this tool
 - [`docs/HANDOFF.md`](docs/HANDOFF.md) — everything a fresh Claude Code session needs to pick this up
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — verified API behaviour, the pipeline as built, and the privacy model
 - [`docs/process.html`](docs/process.html) — the pipeline as a diagram: actions, outputs, the privacy gate
