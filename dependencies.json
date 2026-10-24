@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    {
+      "name": "Python",
+      "check": { "run": "python --version" },
+      "install": "winget install --id Python.Python.3.12 -e --accept-package-agreements --accept-source-agreements"
+    }
+  ]
+}
